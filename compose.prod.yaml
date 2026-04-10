@@ -1,0 +1,37 @@
+services:
+  app:
+    image: ${DOCKER_IMAGE:-fenetre-app}:${DOCKER_TAG:-latest}
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL:
+      ORIGIN:
+      BETTER_AUTH_SECRET:
+      GOOGLE_CLIENT_ID:
+      GOOGLE_CLIENT_SECRET:
+      GOOGLE_CALENDAR_ID:
+      GITHUB_CLIENT_ID:
+      GITHUB_CLIENT_SECRET:
+      RESEND_API_KEY:
+      RESEND_FROM_EMAIL:
+      PUBLIC_APP_URL:
+      CRON_SECRET:
+      REGISTRATION_OPEN:
+      OPENAI_API_KEY:
+      HUNTER_API_KEY:
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  cron:
+    image: ${DOCKER_IMAGE:-fenetre-cron}:${DOCKER_TAG:-latest}
+    environment:
+      PUBLIC_APP_URL:
+      CRON_SECRET:
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
