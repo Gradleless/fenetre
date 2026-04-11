@@ -17,11 +17,12 @@ services:
       PUBLIC_APP_URL:
       CRON_SECRET:
       REGISTRATION_OPEN:
+      PAPPERS_API_KEY:
       OPENAI_API_KEY:
       HUNTER_API_KEY:
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:3000/"]
+      test: ["CMD", "bun", "--eval", "const r = await fetch('http://0.0.0.0:9000/'); if (!r.ok) process.exit(1)"]
       interval: 30s
       timeout: 10s
       retries: 3
