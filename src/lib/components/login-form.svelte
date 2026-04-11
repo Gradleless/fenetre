@@ -60,6 +60,9 @@
 					{#if loading}<Spinner class="mr-2" />{/if}
 					{loading ? m['login.submitting']() : m['login.submit']()}
 				</Button>
+				<a href="/forgot-password" class="block text-center text-sm text-muted-foreground hover:text-foreground">
+					{m['login.forgot_password']()}
+				</a>
 			</FieldGroup>
 		</form>
 	</Card.Content>

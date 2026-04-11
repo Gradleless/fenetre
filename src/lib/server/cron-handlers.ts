@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db'
 import { bookings, briefs } from '$lib/server/db/schema'
-import { and, eq, gte, isNull, lt, lte } from 'drizzle-orm'
+import { and, eq, gte, inArray, isNull, lt, lte } from 'drizzle-orm'
 import { sendReminderToClient } from '$lib/server/resend'
 
 export async function sendReminders(): Promise<void> {
@@ -21,21 +21,20 @@ export async function sendReminders(): Promise<void> {
 		with: { eventType: true, brief: true }
 	})
 
-	const results = await Promise.allSettled(
-		upcoming.map(async (booking) => {
-			await sendReminderToClient(booking)
-			await db
-				.update(bookings)
-				.set({ reminderSentAt: new Date() })
-				.where(eq(bookings.id, booking.id))
-		})
-	)
+	const results = await Promise.allSettled(upcoming.map((booking) => sendReminderToClient(booking)))
 
+	const sentIds: string[] = []
 	results.forEach((result, i) => {
-		if (result.status === 'rejected') {
+		if (result.status === 'fulfilled') {
+			sentIds.push(upcoming[i].id)
+		} else {
 			console.error(`Failed to send reminder for booking ${upcoming[i].id}:`, result.reason)
 		}
 	})
+
+	if (sentIds.length > 0) {
+		await db.update(bookings).set({ reminderSentAt: new Date() }).where(inArray(bookings.id, sentIds))
+	}
 }
 
 export async function markCompleted(): Promise<void> {

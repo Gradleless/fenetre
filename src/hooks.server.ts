@@ -7,7 +7,6 @@ import { paraglideMiddleware } from '$lib/paraglide/server'
 import { db } from '$lib/server/db'
 import { user } from '$lib/server/db/schema'
 import { env } from '$lib/server/env'
-import { sql } from 'drizzle-orm'
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request, locale }) => {
@@ -22,8 +21,8 @@ const handleRegistrationGuard: Handle = async ({ event, resolve }) => {
 		event.url.pathname === '/api/auth/sign-up/email' && event.request.method === 'POST'
 
 	if (isSignUp && env.REGISTRATION_OPEN !== 'true') {
-		const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(user)
-		if (Number(count) > 0) {
+		const [row] = await db.select({ id: user.id }).from(user).limit(1)
+		if (row) {
 			return new Response(
 				JSON.stringify({ message: 'Registration is closed. Contact an admin.' }),
 				{ status: 403, headers: { 'Content-Type': 'application/json' } }

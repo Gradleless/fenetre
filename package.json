@@ -60,6 +60,7 @@
 		"vite-plugin-devtools-json": "^1.0.0"
 	},
 	"dependencies": {
+		"argon2": "^0.44.0",
 		"googleapis": "^171.4.0",
 		"handlebars": "^4.7.9",
 		"ical-generator": "^10.1.0",

@@ -7,7 +7,7 @@ import { bookingLimiter, formLimiter } from '$lib/server/limiter';
 import { requireAuth } from '$lib/server/remote-helpers';
 import { getLocale } from '$lib/paraglide/runtime';
 import { error } from '@sveltejs/kit';
-import { and, desc, eq, gte, ne } from 'drizzle-orm';
+import { and, count, desc, eq, gte, lt, ne } from 'drizzle-orm';
 import * as z from 'zod';
 
 export const getUpcomingBookings = query(async () => {
@@ -21,6 +21,44 @@ export const getUpcomingBookings = query(async () => {
 		with: { eventType: true, brief: true },
 		orderBy: bookings.startTime
 	});
+});
+
+export const getDashboardStats = query(async () => {
+	const user = requireAuth();
+	const now = new Date();
+	const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	const todayEnd = new Date(todayStart.getTime() + 86_400_000);
+	const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+	const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+	const [todayRows, monthRows] = await Promise.all([
+		db
+			.select({ count: count() })
+			.from(bookings)
+			.where(
+				and(
+					eq(bookings.userId, user.id),
+					ne(bookings.status, 'cancelled'),
+					gte(bookings.startTime, todayStart),
+					lt(bookings.startTime, todayEnd)
+				)
+			),
+		db
+			.select({ count: count() })
+			.from(bookings)
+			.where(
+				and(
+					eq(bookings.userId, user.id),
+					gte(bookings.startTime, monthStart),
+					lt(bookings.startTime, monthEnd)
+				)
+			)
+	]);
+
+	return {
+		todayCount: todayRows[0].count,
+		thisMonthCount: monthRows[0].count
+	};
 });
 
 export const getAllBookings = query(async () => {
@@ -144,15 +182,16 @@ export const createBooking = command(
 			})
 			.returning();
 
-		await db.update(briefs).set({ bookingId: booking.id }).where(eq(briefs.id, input.briefId));
-
-		const { eventId: googleEventId, meetLink } = await createCalendarEvent(userId, {
-			summary: `${eventType.name} — ${input.clientName}`,
-			description: 'Booked via fenêtre',
-			startTime,
-			endTime,
-			attendeeEmail: input.clientEmail
-		});
+		const [{ eventId: googleEventId, meetLink }] = await Promise.all([
+			createCalendarEvent(userId, {
+				summary: `${eventType.name} — ${input.clientName}`,
+				description: 'Booked via fenêtre',
+				startTime,
+				endTime,
+				attendeeEmail: input.clientEmail
+			}),
+			db.update(briefs).set({ bookingId: booking.id }).where(eq(briefs.id, input.briefId))
+		]);
 
 		await db.update(bookings).set({ googleEventId, meetLink }).where(eq(bookings.id, booking.id));
 
