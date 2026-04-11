@@ -2,6 +2,8 @@
 
 A self-hosted scheduling and booking platform for freelancers. Clients book meetings directly from your public profile — no back-and-forth emails.
 
+Ps: It's my first time with sveltekit's remote function, I think I need to learn a few optimisation tips to reduce latency
+
 ## Features
 
 - **Public booking pages** — shareable `/:username/:event-slug` links for each event type
@@ -16,16 +18,16 @@ A self-hosted scheduling and booking platform for freelancers. Clients book meet
 
 ## Tech Stack
 
-| Layer | Choice |
-| --- | --- |
-| Framework | SvelteKit (Svelte 5) |
-| Language | TypeScript |
-| Styling | Tailwind CSS v4 |
-| Database | PostgreSQL + Drizzle ORM |
-| Auth | Better Auth (email/password, Google OAuth, GitHub OAuth) |
-| Email | Resend + MJML + Handlebars |
-| Runtime | Bun |
-| Container | Docker |
+| Layer     | Choice                                                   |
+| --------- | -------------------------------------------------------- |
+| Framework | SvelteKit (Svelte 5)                                     |
+| Language  | TypeScript                                               |
+| Styling   | Tailwind CSS v4                                          |
+| Database  | PostgreSQL + Drizzle ORM                                 |
+| Auth      | Better Auth (email/password, Google OAuth, GitHub OAuth) |
+| Email     | Resend + MJML + Handlebars                               |
+| Runtime   | Bun                                                      |
+| Container | Docker                                                   |
 
 ## Prerequisites
 
@@ -65,22 +67,22 @@ On first run, navigate to `/setup` to create the initial admin account.
 
 ## Environment Variables
 
-| Variable | Required | Description |
-| --- | --- | --- |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `ORIGIN` | Yes | Public URL of the app (e.g. `https://yourdomain.com`) |
-| `BETTER_AUTH_SECRET` | Yes | Random secret — generate with `openssl rand -base64 32` |
-| `RESEND_API_KEY` | Yes | Resend API key |
-| `RESEND_FROM_EMAIL` | Yes | Sender address |
-| `PUBLIC_APP_URL` | Yes | Used by cron endpoints (`http://app:3000` in Docker, otherwise your domain) |
-| `CRON_SECRET` | Yes | Shared secret for cron route auth — generate with `openssl rand -base64 32` |
-| `GOOGLE_CLIENT_ID` | OAuth | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | OAuth | Google OAuth client secret |
-| `GOOGLE_CALENDAR_ID` | No | Fallback calendar ID (default: `primary`) |
-| `GITHUB_CLIENT_ID` | No | GitHub OAuth client ID |
-| `GITHUB_CLIENT_SECRET` | No | GitHub OAuth client secret |
-| `REGISTRATION_OPEN` | No | Set to `true` to allow public self-registration (default: `false`) |
-| `PAPPERS_API_KEY` | No | [Pappers](https://www.pappers.fr/api) key for French company lookup |
+| Variable               | Required | Description                                                                 |
+| ---------------------- | -------- | --------------------------------------------------------------------------- |
+| `DATABASE_URL`         | Yes      | PostgreSQL connection string                                                |
+| `ORIGIN`               | Yes      | Public URL of the app (e.g. `https://yourdomain.com`)                       |
+| `BETTER_AUTH_SECRET`   | Yes      | Random secret — generate with `openssl rand -base64 32`                     |
+| `RESEND_API_KEY`       | Yes      | Resend API key                                                              |
+| `RESEND_FROM_EMAIL`    | Yes      | Sender address                                                              |
+| `PUBLIC_APP_URL`       | Yes      | Used by cron endpoints (`http://app:3000` in Docker, otherwise your domain) |
+| `CRON_SECRET`          | Yes      | Shared secret for cron route auth — generate with `openssl rand -base64 32` |
+| `GOOGLE_CLIENT_ID`     | OAuth    | Google OAuth client ID                                                      |
+| `GOOGLE_CLIENT_SECRET` | OAuth    | Google OAuth client secret                                                  |
+| `GOOGLE_CALENDAR_ID`   | No       | Fallback calendar ID (default: `primary`)                                   |
+| `GITHUB_CLIENT_ID`     | No       | GitHub OAuth client ID                                                      |
+| `GITHUB_CLIENT_SECRET` | No       | GitHub OAuth client secret                                                  |
+| `REGISTRATION_OPEN`    | No       | Set to `true` to allow public self-registration (default: `false`)          |
+| `PAPPERS_API_KEY`      | No       | [Pappers](https://www.pappers.fr/api) key for French company lookup         |
 
 ## Database Commands
 
