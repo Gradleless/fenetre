@@ -4,6 +4,13 @@ A self-hosted scheduling and booking platform for freelancers. Clients book meet
 
 Ps: It's my first time with sveltekit's remote function, I think I need to learn a few optimisation tips to reduce latency
 
+![Hero](img/hero.gif)
+
+## Screenshots
+
+![Booking flow](img/booking-flow.png)
+![Admin — Bookings](img/panel-bookings.png)
+
 ## Features
 
 - **Public booking pages** — shareable `/:username/:event-slug` links for each event type
