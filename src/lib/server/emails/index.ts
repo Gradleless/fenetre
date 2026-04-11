@@ -6,11 +6,13 @@ import { formatDayLabel, formatTime } from '$lib/utils'
 import confirmationSrc from './templates/confirmation.mjml?raw'
 import reminderSrc from './templates/reminder.mjml?raw'
 import notificationSrc from './templates/notification.mjml?raw'
+import resetPasswordSrc from './templates/reset-password.mjml?raw'
 
 const tpl = {
 	confirmation: Handlebars.compile(confirmationSrc),
 	reminder: Handlebars.compile(reminderSrc),
-	notification: Handlebars.compile(notificationSrc)
+	notification: Handlebars.compile(notificationSrc),
+	resetPassword: Handlebars.compile(resetPasswordSrc)
 }
 
 function toHtml(compiled: HandlebarsTemplateDelegate, data: object): string {
@@ -99,6 +101,21 @@ export interface NotificationEmailData {
 		budget: string | null
 		urgency: string | null
 	} | null
+}
+
+export function passwordResetEmail(resetUrl: string, locale: Locale = 'fr'): { subject: string; html: string } {
+	const l = { locale } as const
+	return {
+		subject: m['email.reset_password.subject']({}, l),
+		html: toHtml(tpl.resetPassword, {
+			title: m['email.reset_password.title']({}, l),
+			body: m['email.reset_password.body']({}, l),
+			buttonLabel: m['email.reset_password.button']({}, l),
+			resetUrl,
+			expiry: m['email.reset_password.expiry']({}, l),
+			footer: m['email.footer']({}, l)
+		})
+	}
 }
 
 export function notificationEmail(data: NotificationEmailData): { subject: string; html: string } {

@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import ical from 'ical-generator'
 import { env } from '$lib/server/env'
-import { confirmationEmail, reminderEmail, notificationEmail } from '$lib/server/emails'
+import { confirmationEmail, reminderEmail, notificationEmail, passwordResetEmail } from '$lib/server/emails'
 import type { Locale } from '$lib/paraglide/runtime'
 import type { InferSelectModel } from 'drizzle-orm'
 import type { bookings, eventTypes, briefs } from '$lib/server/db/schema'
@@ -75,6 +75,11 @@ export async function sendNotificationToFreelance(
 		subject,
 		html
 	})
+}
+
+export async function sendPasswordReset(email: string, resetUrl: string): Promise<void> {
+	const { subject, html } = passwordResetEmail(resetUrl)
+	await resend.emails.send({ from: FROM, to: email, subject, html })
 }
 
 export async function sendReminderToClient(booking: BookingWithRelations): Promise<void> {

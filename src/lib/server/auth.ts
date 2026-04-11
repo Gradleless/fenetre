@@ -6,12 +6,23 @@ import { ac, admin as adminRole, superadmin as superadminRole, user as userRole 
 import { env } from '$lib/server/env'
 import { getRequestEvent } from '$app/server'
 import { db } from '$lib/server/db'
+import argon2 from 'argon2'
+import { sendPasswordReset } from '$lib/server/resend'
 
 export const auth = betterAuth({
 	baseURL: env.ORIGIN,
 	secret: env.BETTER_AUTH_SECRET,
 	database: drizzleAdapter(db, { provider: 'pg' }),
-	emailAndPassword: { enabled: true },
+	emailAndPassword: {
+		enabled: true,
+		password: {
+			hash: (password) => argon2.hash(password, { type: argon2.argon2id }),
+			verify: ({ hash, password }) => argon2.verify(hash, password)
+		},
+		sendResetPassword: async ({ user, url }) => {
+			await sendPasswordReset(user.email, url)
+		}
+	},
 	socialProviders: {},
 	session: {
 		expiresIn: 60 * 60 * 24 * 7

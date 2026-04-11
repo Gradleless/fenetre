@@ -8,27 +8,16 @@
 	import { CalendarDays, Clock, TrendingUp } from '@lucide/svelte';
 	import * as m from '$lib/paraglide/messages';
 	import { formatDate, formatTime } from '$lib/utils';
-	import { getUpcomingBookings } from '$lib/remote/bookings.remote';
+	import { getDashboardStats, getUpcomingBookings } from '$lib/remote/bookings.remote';
 	import { getAllEventTypes, setBusyModeAll } from '$lib/remote/eventTypes.remote';
 
 	const upcomingBookings = $derived(await getUpcomingBookings());
 	const allEventTypes = $derived(await getAllEventTypes());
+	const stats = $derived(await getDashboardStats());
 
 	const busyMode = $derived(allEventTypes.some((et) => et.isBusyMode));
 
-	const today = new Date();
-	const todayStr = today.toISOString().slice(0, 10);
-
-	const todayBookings = $derived(
-		upcomingBookings.filter((b) => new Date(b.startTime).toISOString().slice(0, 10) === todayStr)
-	);
-
-	const thisMonthCount = $derived(
-		upcomingBookings.filter((b) => {
-			const d = new Date(b.startTime);
-			return d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth();
-		}).length
-	);
+	const todayStr = new Date().toISOString().slice(0, 10);
 
 	let togglingBusy = $state(false);
 
@@ -73,7 +62,7 @@
 			<Card.Content class="flex items-center gap-4 py-6">
 				<Clock class="size-8 text-muted-foreground" />
 				<div>
-					<p class="text-2xl font-bold">{todayBookings.length}</p>
+					<p class="text-2xl font-bold">{stats.todayCount}</p>
 					<p class="text-sm text-muted-foreground">{m['admin.dashboard.today']()}</p>
 				</div>
 			</Card.Content>
@@ -82,7 +71,7 @@
 			<Card.Content class="flex items-center gap-4 py-6">
 				<TrendingUp class="size-8 text-muted-foreground" />
 				<div>
-					<p class="text-2xl font-bold">{thisMonthCount}</p>
+					<p class="text-2xl font-bold">{stats.thisMonthCount}</p>
 					<p class="text-sm text-muted-foreground">{m['admin.dashboard.this_month']()}</p>
 				</div>
 			</Card.Content>

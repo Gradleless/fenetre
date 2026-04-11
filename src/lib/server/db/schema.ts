@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import {
 	boolean,
+	index,
 	integer,
 	jsonb,
 	pgTable,
@@ -45,75 +46,104 @@ export const eventTypes = pgTable(
 		sortOrder: integer('sort_order').default(0),
 		createdAt: timestamp('created_at').defaultNow().notNull()
 	},
-	(t) => [unique().on(t.userId, t.slug)]
+	(t) => [
+		unique().on(t.userId, t.slug),
+		index('event_types_userId_isActive_idx').on(t.userId, t.isActive)
+	]
 );
 
-export const availability = pgTable('availability', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	dayOfWeek: integer('day_of_week').notNull(), // 0=sun … 6=sat
-	startTime: text('start_time').notNull(), // "09:00"
-	endTime: text('end_time').notNull(), // "18:00"
-	isActive: boolean('is_active').default(true).notNull()
-});
+export const availability = pgTable(
+	'availability',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		dayOfWeek: integer('day_of_week').notNull(), // 0=sun … 6=sat
+		startTime: text('start_time').notNull(), // "09:00"
+		endTime: text('end_time').notNull(), // "18:00"
+		isActive: boolean('is_active').default(true).notNull()
+	},
+	(t) => [index('availability_userId_idx').on(t.userId)]
+);
 
-export const bookings = pgTable('bookings', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	userId: text('user_id')
-		.notNull()
-		.references(() => user.id, { onDelete: 'cascade' }),
-	eventTypeId: uuid('event_type_id')
-		.references(() => eventTypes.id)
-		.notNull(),
-	clientName: text('client_name').notNull(),
-	clientEmail: text('client_email').notNull(),
-	clientLinkedin: text('client_linkedin'),
-	startTime: timestamp('start_time').notNull(),
-	endTime: timestamp('end_time').notNull(),
-	status: text('status').default('confirmed').notNull(), // confirmed | cancelled | rescheduled | completed
-	source: text('source'), // malt | linkedin | portfolio | direct
-	googleEventId: text('google_event_id'),
-	meetLink: text('meet_link'),
-	rescheduleToken: text('reschedule_token').unique(),
-	locale: text('locale').notNull().default('fr'),
-	reminderSentAt: timestamp('reminder_sent_at'),
-	createdAt: timestamp('created_at').defaultNow().notNull()
-});
+export const bookings = pgTable(
+	'bookings',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		eventTypeId: uuid('event_type_id')
+			.references(() => eventTypes.id)
+			.notNull(),
+		clientName: text('client_name').notNull(),
+		clientEmail: text('client_email').notNull(),
+		clientLinkedin: text('client_linkedin'),
+		startTime: timestamp('start_time').notNull(),
+		endTime: timestamp('end_time').notNull(),
+		status: text('status').default('confirmed').notNull(), // confirmed | cancelled | rescheduled | completed
+		source: text('source'), // malt | linkedin | portfolio | direct
+		googleEventId: text('google_event_id'),
+		meetLink: text('meet_link'),
+		rescheduleToken: text('reschedule_token').unique(),
+		locale: text('locale').notNull().default('fr'),
+		reminderSentAt: timestamp('reminder_sent_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(t) => [
+		// user-scoped queries (getUpcomingBookings, getAllBookings, getAvailableSlots)
+		index('bookings_userId_status_startTime_idx').on(t.userId, t.status, t.startTime),
+		// cron: sendReminders and markCompleted filter by status + time without a userId
+		index('bookings_status_startTime_idx').on(t.status, t.startTime),
+		index('bookings_status_endTime_idx').on(t.status, t.endTime)
+	]
+);
 
 // Created as soon as the client starts filling the form — bookingId is null until they confirm a slot
-export const briefs = pgTable('briefs', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	bookingId: uuid('booking_id').references(() => bookings.id),
-	clientEmail: text('client_email').notNull(),
-	companyName: text('company_name'),
-	projectDescription: text('project_description'),
-	stack: text('stack'),
-	missionType: text('mission_type'), // courte | longue | conseil
-	budget: text('budget'),
-	urgency: text('urgency'), // normal | urgent
-	isAbandoned: boolean('is_abandoned').default(false).notNull(),
-	createdAt: timestamp('created_at').defaultNow().notNull()
-});
+export const briefs = pgTable(
+	'briefs',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		bookingId: uuid('booking_id').references(() => bookings.id),
+		clientEmail: text('client_email').notNull(),
+		companyName: text('company_name'),
+		projectDescription: text('project_description'),
+		stack: text('stack'),
+		missionType: text('mission_type'), // courte | longue | conseil
+		budget: text('budget'),
+		urgency: text('urgency'), // normal | urgent
+		isAbandoned: boolean('is_abandoned').default(false).notNull(),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(t) => [
+		index('briefs_bookingId_idx').on(t.bookingId),
+		// checkAbandoned: WHERE bookingId IS NULL AND isAbandoned = false AND createdAt < cutoff
+		index('briefs_isAbandoned_createdAt_idx').on(t.isAbandoned, t.createdAt)
+	]
+);
 
-export const prospectInsights = pgTable('prospect_insights', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	bookingId: uuid('booking_id')
-		.references(() => bookings.id)
-		.notNull(),
-	company: text('company'),
-	companyDomain: text('company_domain'),
-	companySector: text('company_sector'),
-	companySize: text('company_size'),
-	companyDescription: text('company_description'),
-	prospectRole: text('prospect_role'),
-	aiBrief: text('ai_brief'),
-	aiAngles: jsonb('ai_angles'), // string[]
-	aiOpeningQuestion: text('ai_opening_question'),
-	compatibilityScore: integer('compatibility_score'), // 0-100
-	createdAt: timestamp('created_at').defaultNow().notNull()
-});
+export const prospectInsights = pgTable(
+	'prospect_insights',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		bookingId: uuid('booking_id')
+			.references(() => bookings.id)
+			.notNull(),
+		company: text('company'),
+		companyDomain: text('company_domain'),
+		companySector: text('company_sector'),
+		companySize: text('company_size'),
+		companyDescription: text('company_description'),
+		prospectRole: text('prospect_role'),
+		aiBrief: text('ai_brief'),
+		aiAngles: jsonb('ai_angles'), // string[]
+		aiOpeningQuestion: text('ai_opening_question'),
+		compatibilityScore: integer('compatibility_score'), // 0-100
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(t) => [index('prospect_insights_bookingId_idx').on(t.bookingId)]
+);
 
 export const prospectTracking = pgTable('prospect_tracking', {
 	id: uuid('id').defaultRandom().primaryKey(),
@@ -127,14 +157,18 @@ export const prospectTracking = pgTable('prospect_tracking', {
 	updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-export const waitlist = pgTable('waitlist', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	eventTypeId: uuid('event_type_id').references(() => eventTypes.id),
-	email: text('email').notNull(),
-	name: text('name'),
-	notifiedAt: timestamp('notified_at'),
-	createdAt: timestamp('created_at').defaultNow().notNull()
-});
+export const waitlist = pgTable(
+	'waitlist',
+	{
+		id: uuid('id').defaultRandom().primaryKey(),
+		eventTypeId: uuid('event_type_id').references(() => eventTypes.id),
+		email: text('email').notNull(),
+		name: text('name'),
+		notifiedAt: timestamp('notified_at'),
+		createdAt: timestamp('created_at').defaultNow().notNull()
+	},
+	(t) => [index('waitlist_eventTypeId_idx').on(t.eventTypeId)]
+);
 
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 	user: one(user, { fields: [userSettings.userId], references: [user.id] })
