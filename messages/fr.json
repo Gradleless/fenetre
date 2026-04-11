@@ -130,6 +130,25 @@
 	"register.login_link": "Déjà un compte ?",
 	"login.register_link": "Pas encore de compte ?",
 
+	"login.forgot_password": "Mot de passe oublié ?",
+
+	"forgot_password.title": "Mot de passe oublié",
+	"forgot_password.description": "Entrez votre email et vous recevrez un lien pour réinitialiser votre mot de passe.",
+	"forgot_password.submit": "Envoyer le lien",
+	"forgot_password.submitting": "Envoi...",
+	"forgot_password.success": "Si un compte existe avec cet email, vous recevrez un lien dans quelques instants.",
+	"forgot_password.back": "Retour à la connexion",
+
+	"reset_password.title": "Nouveau mot de passe",
+	"reset_password.description": "Choisissez un nouveau mot de passe pour votre compte.",
+	"reset_password.password_label": "Nouveau mot de passe",
+	"reset_password.confirm_label": "Confirmer le mot de passe",
+	"reset_password.submit": "Réinitialiser",
+	"reset_password.submitting": "Réinitialisation...",
+	"reset_password.success": "Mot de passe mis à jour ! Vous pouvez vous connecter.",
+	"reset_password.error": "Lien invalide ou expiré.",
+	"reset_password.mismatch": "Les mots de passe ne correspondent pas.",
+
 	"login.title": "Connexion",
 	"login.description": "Accès réservé",
 	"login.last_used": "Dernière méthode : {method}",
@@ -303,6 +322,13 @@
 
 	"email": {
 		"footer": "Envoyé via Fenêtre",
+		"reset_password": {
+			"subject": "Réinitialisez votre mot de passe",
+			"title": "Réinitialiser votre mot de passe",
+			"body": "Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.",
+			"button": "Réinitialiser le mot de passe",
+			"expiry": "Ce lien est valable 1 heure. Si vous n'avez pas fait cette demande, ignorez cet email."
+		},
 		"confirmation": {
 			"subject": "C'est confirmé, {firstName} !",
 			"title": "C'est confirmé, {firstName} !",

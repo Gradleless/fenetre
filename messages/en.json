@@ -130,6 +130,25 @@
 	"register.login_link": "Already have an account?",
 	"login.register_link": "No account?",
 
+	"login.forgot_password": "Forgot your password?",
+
+	"forgot_password.title": "Forgot password",
+	"forgot_password.description": "Enter your email and we'll send you a link to reset your password.",
+	"forgot_password.submit": "Send reset link",
+	"forgot_password.submitting": "Sending...",
+	"forgot_password.success": "If an account exists with this email, you'll receive a link shortly.",
+	"forgot_password.back": "Back to login",
+
+	"reset_password.title": "New password",
+	"reset_password.description": "Choose a new password for your account.",
+	"reset_password.password_label": "New password",
+	"reset_password.confirm_label": "Confirm password",
+	"reset_password.submit": "Reset password",
+	"reset_password.submitting": "Resetting...",
+	"reset_password.success": "Password updated! You can now sign in.",
+	"reset_password.error": "Invalid or expired link.",
+	"reset_password.mismatch": "Passwords don't match.",
+
 	"login.title": "Login",
 	"login.description": "Restricted access",
 	"login.last_used": "Last used: {method}",
@@ -303,6 +322,13 @@
 
 	"email": {
 		"footer": "Sent via Fenêtre",
+		"reset_password": {
+			"subject": "Reset your password",
+			"title": "Reset your password",
+			"body": "You requested a password reset. Click the button below to choose a new one.",
+			"button": "Reset password",
+			"expiry": "This link expires in 1 hour. If you didn't request this, you can safely ignore this email."
+		},
 		"confirmation": {
 			"subject": "It's confirmed, {firstName}!",
 			"title": "It's confirmed, {firstName}!",
