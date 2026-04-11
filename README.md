@@ -122,6 +122,41 @@ After logging in, `/admin` gives access to:
 - **Users** — manage accounts (admin only)
 - **Settings** — connect Google Calendar, update profile
 
+## Embed Widget
+
+`static/booking-widget.js` lets you embed a booking modal on any external website (portfolio, marketing page, etc.) without an iframe tag in your markup.
+
+**Include the script:**
+
+```html
+<script
+  src="https://your-fenetre-instance.com/booking-widget.js"
+  data-url="https://your-fenetre-instance.com"
+  data-username="alice"
+></script>
+```
+
+**Open the event type picker** (lists all event types for a user):
+
+```html
+<button data-booking>Book a call</button>
+```
+
+**Open a specific event type directly:**
+
+```html
+<button data-event="discovery-30min">Book a discovery call</button>
+```
+
+**Optional attributes on each button:**
+
+| Attribute | Description |
+| --- | --- |
+| `data-username` | Override the default username set on the script tag |
+| `data-from` | Source tag passed to the booking (default: `"portfolio"`) |
+
+The modal closes automatically when the booking is confirmed or when the user clicks outside it.
+
 ## License
 
 MIT
