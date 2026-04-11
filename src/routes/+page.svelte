@@ -23,6 +23,7 @@
 	let { data } = $props();
 
 	const users = $derived(await getAllUsernames());
+	const GITHUB_LINK = 'https://github.com/gradleless/fenetre';
 
 	const sources = ['Malt', 'LinkedIn', 'Portfolio', 'clients'];
 
@@ -76,13 +77,7 @@
 	<div class="flex items-center gap-1.5">
 		<LanguageSelector />
 		<ThemeToggle size="icon-sm" />
-		<Button
-			href="https://github.com/gradleless/fenetre"
-			variant="ghost"
-			size="sm"
-			target="_blank"
-			rel="noopener noreferrer"
-		>
+		<Button href={GITHUB_LINK} variant="ghost" size="sm" target="_blank" rel="noopener noreferrer">
 			<Github />
 			<span class="hidden sm:inline">GitHub</span>
 		</Button>
@@ -210,12 +205,7 @@
 						</li>
 					{/each}
 				</ul>
-				<Button
-					href="https://github.com/your-username/fenetre"
-					variant="outline"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
+				<Button href={GITHUB_LINK} variant="outline" target="_blank" rel="noopener noreferrer">
 					<Github />
 					{m['landing.deploy.github']()}
 				</Button>
@@ -229,7 +219,7 @@
 				</div>
 				<div class="terminal-body px-5 py-4 font-mono text-sm leading-relaxed">
 					<TypingAnimation
-						content="$ git clone github.com/you/fenetre"
+						content="$ git clone {GITHUB_LINK}"
 						typeSpeed={30}
 						delay={200}
 						startOnView={true}
