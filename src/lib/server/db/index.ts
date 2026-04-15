@@ -6,7 +6,7 @@ import { env } from '$lib/server/env';
 const client = postgres(env.DATABASE_URL, {
 	ssl: 'require', // required for Aiven
 	max: 10,
-	idle_timeout: 20,
+	idle_timeout: 120,
 	connect_timeout: 10
 });
 

@@ -16,29 +16,46 @@ export function createOAuth2Client() {
 	);
 }
 
+interface CachedCreds {
+	refreshToken: string;
+	calendarId: string;
+	expiresAt: number;
+}
+const credsCache = new Map<string, CachedCreds>();
+
 async function getCalendarClient(userId: string) {
 	if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
 		throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are required.');
 	}
 
-	const [row] = await db
-		.select({
-			googleRefreshToken: userSettings.googleRefreshToken,
-			googleCalendarId: userSettings.googleCalendarId
-		})
-		.from(userSettings)
-		.where(eq(userSettings.userId, userId));
+	let creds = credsCache.get(userId);
+	if (!creds || creds.expiresAt <= Date.now()) {
+		const [row] = await db
+			.select({
+				googleRefreshToken: userSettings.googleRefreshToken,
+				googleCalendarId: userSettings.googleCalendarId
+			})
+			.from(userSettings)
+			.where(eq(userSettings.userId, userId));
 
-	if (!row?.googleRefreshToken) {
-		throw new Error(`Google Calendar not connected. Go to /admin/settings to connect.`);
+		if (!row?.googleRefreshToken) {
+			throw new Error(`Google Calendar not connected. Go to /admin/settings to connect.`);
+		}
+
+		creds = {
+			refreshToken: row.googleRefreshToken,
+			calendarId: row.googleCalendarId,
+			expiresAt: Date.now() + 5 * 60 * 1000
+		};
+		credsCache.set(userId, creds);
 	}
 
 	const auth = new google.auth.OAuth2(env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET);
-	auth.setCredentials({ refresh_token: row.googleRefreshToken });
+	auth.setCredentials({ refresh_token: creds.refreshToken });
 
 	return {
 		calendar: google.calendar({ version: 'v3', auth }),
-		calendarId: row.googleCalendarId
+		calendarId: creds.calendarId
 	};
 }
 
@@ -47,11 +64,22 @@ export interface BusySlot {
 	end: string;
 }
 
+interface CachedBusy {
+	slots: BusySlot[];
+	expiresAt: number;
+}
+const busyCache = new Map<string, CachedBusy>();
+
 export async function getBusySlots(
 	userId: string,
 	timeMin: Date,
 	timeMax: Date
 ): Promise<BusySlot[]> {
+	// Key on userId + hour so the window is stable within the same hour
+	const cacheKey = `${userId}:${timeMin.toISOString().slice(0, 13)}`;
+	const hit = busyCache.get(cacheKey);
+	if (hit && hit.expiresAt > Date.now()) return hit.slots;
+
 	const { calendar, calendarId } = await getCalendarClient(userId);
 
 	const res = await calendar.freebusy.query({
@@ -62,7 +90,15 @@ export async function getBusySlots(
 		}
 	});
 
-	return (res.data.calendars?.[calendarId]?.busy ?? []) as BusySlot[];
+	const slots = (res.data.calendars?.[calendarId]?.busy ?? []) as BusySlot[];
+	busyCache.set(cacheKey, { slots, expiresAt: Date.now() + 10 * 60 * 1000 });
+	return slots;
+}
+
+export function invalidateBusySlotsCache(userId: string) {
+	for (const key of busyCache.keys()) {
+		if (key.startsWith(`${userId}:`)) busyCache.delete(key);
+	}
 }
 
 export async function createCalendarEvent(
