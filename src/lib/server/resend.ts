@@ -60,7 +60,8 @@ export async function sendConfirmationToClient(booking: BookingWithRelations): P
 
 export async function sendNotificationToFreelance(
 	booking: BookingWithRelations,
-	notificationEmailAddress?: string
+	notificationEmailAddress?: string,
+	freelanceLocale?: Locale
 ): Promise<void> {
 	const { subject, html } = notificationEmail({
 		clientName: booking.clientName,
@@ -70,7 +71,7 @@ export async function sendNotificationToFreelance(
 		eventTypeName: booking.eventType.name,
 		startTime: booking.startTime,
 		meetLink: booking.meetLink ?? null,
-		locale: booking.locale as Locale,
+		locale: freelanceLocale ?? (booking.locale as Locale),
 		brief: booking.brief ?? null
 	});
 

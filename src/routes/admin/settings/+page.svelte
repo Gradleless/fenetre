@@ -14,6 +14,7 @@
 	import { getAllEventTypes, setBusyModeAll } from '$lib/remote/eventTypes.remote';
 	import { slide } from 'svelte/transition';
 	import { getSettings, updateSettings } from '$lib/remote/settings.remote';
+	import { locales, type Locale } from '$lib/paraglide/runtime';
 	import type { PortfolioLink } from '$lib/server/db/schema';
 
 	const eventTypes = $derived(await getAllEventTypes());
@@ -36,17 +37,24 @@
 	let username = $state('');
 	let notificationEmail = $state('');
 	let bufferMinutes = $state(15);
+	let preferredLocale = $state<Locale>('fr');
 	let portfolioLinks = $state<PortfolioLink[]>([]);
 
 	$effect(() => {
 		username = settings.username ?? '';
 		notificationEmail = settings.notificationEmail ?? '';
 		bufferMinutes = settings.bufferMinutes;
+		preferredLocale = (settings.preferredLocale as Locale) ?? 'fr';
 		portfolioLinks = settings.portfolioLinks ?? [];
 	});
 
 	let toggling = $state(false);
 	let saving = $state(false);
+
+	function localeLabel(locale: string) {
+		const name = new Intl.DisplayNames([locale], { type: 'language' }).of(locale) ?? locale;
+		return name.charAt(0).toUpperCase() + name.slice(1);
+	}
 
 	const MISSION_OPTIONS = $derived([
 		{ value: 'all', label: m['admin.settings.portfolio.mission.all']() },
@@ -76,6 +84,7 @@
 				username: username || undefined,
 				notificationEmail: notificationEmail || null,
 				bufferMinutes,
+				preferredLocale,
 				portfolioLinks
 			});
 			toast.success(m['admin.settings.saved']());
@@ -170,6 +179,22 @@
 						bind:value={notificationEmail}
 						placeholder={m['admin.settings.notification_email.placeholder']()}
 					/>
+				</Field>
+				<Field>
+					<FieldLabel>{m['admin.settings.locale.title']()}</FieldLabel>
+					<p class="mb-2 text-sm text-muted-foreground">
+						{m['admin.settings.locale.description']()}
+					</p>
+					<Select.Root type="single" value={preferredLocale} onValueChange={(v) => { preferredLocale = v as Locale; }}>
+						<Select.Trigger class="w-40">
+							{localeLabel(preferredLocale)}
+						</Select.Trigger>
+						<Select.Content>
+							{#each locales as locale}
+								<Select.Item value={locale}>{localeLabel(locale)}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 				</Field>
 				<Field>
 					<FieldLabel>{m['admin.settings.buffer.title']()}</FieldLabel>

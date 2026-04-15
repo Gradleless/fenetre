@@ -25,6 +25,7 @@ export const userSettings = pgTable('user_settings', {
 	notificationEmail: text('notification_email'),
 	bufferMinutes: integer('buffer_minutes').notNull().default(15),
 	portfolioLinks: jsonb('portfolio_links').$type<PortfolioLink[]>(),
+	preferredLocale: text('preferred_locale').notNull().default('fr'),
 	googleRefreshToken: text('google_refresh_token'),
 	googleCalendarId: text('google_calendar_id').notNull().default('primary')
 });

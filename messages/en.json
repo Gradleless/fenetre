@@ -257,6 +257,8 @@
 	"admin.settings.notification_email.title": "Notification email",
 	"admin.settings.notification_email.description": "Address for new booking notifications. Defaults to the sender address.",
 	"admin.settings.notification_email.placeholder": "you@domain.com",
+	"admin.settings.locale.title": "Email language",
+	"admin.settings.locale.description": "Notifications you receive will be in this language, regardless of the client's.",
 	"admin.settings.buffer.title": "Buffer between appointments (min)",
 	"admin.settings.buffer.description": "Protected time before and after each appointment.",
 	"admin.settings.portfolio.title": "Portfolio links",

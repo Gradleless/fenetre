@@ -11,7 +11,7 @@ import {
 import { sendConfirmationToClient, sendNotificationToFreelance } from '$lib/server/resend';
 import { bookingLimiter, formLimiter } from '$lib/server/limiter';
 import { requireAuth } from '$lib/server/remote-helpers';
-import { getLocale } from '$lib/paraglide/runtime';
+import { getLocale, type Locale } from '$lib/paraglide/runtime';
 import { error } from '@sveltejs/kit';
 import { and, count, desc, eq, getTableColumns, gt, gte, lt, ne } from 'drizzle-orm';
 import * as z from 'zod';
@@ -131,7 +131,8 @@ export const createBooking = command(
 			.select({
 				...getTableColumns(eventTypes),
 				notificationEmail: userSettings.notificationEmail,
-				bufferMinutes: userSettings.bufferMinutes
+				bufferMinutes: userSettings.bufferMinutes,
+				preferredLocale: userSettings.preferredLocale
 			})
 			.from(eventTypes)
 			.innerJoin(userSettings, eq(eventTypes.userId, userSettings.userId))
@@ -140,7 +141,7 @@ export const createBooking = command(
 
 		if (!row) error(404, 'Event type not found');
 
-		const { userId, notificationEmail, bufferMinutes } = row;
+		const { userId, notificationEmail, bufferMinutes, preferredLocale } = row;
 		const startTime = new Date(input.startTime);
 		const endTime = new Date(startTime.getTime() + row.duration * 60_000);
 		const rescheduleToken = crypto.randomUUID();
@@ -206,7 +207,7 @@ export const createBooking = command(
 
 				await Promise.all([
 					sendConfirmationToClient(fullBooking),
-					sendNotificationToFreelance(fullBooking, notificationEmail ?? undefined)
+					sendNotificationToFreelance(fullBooking, notificationEmail ?? undefined, preferredLocale as Locale)
 				]);
 
 				const companyName = fullBooking.brief?.companyName;

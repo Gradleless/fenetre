@@ -257,6 +257,8 @@
 	"admin.settings.notification_email.title": "Email de notification",
 	"admin.settings.notification_email.description": "Adresse destinataire pour les nouvelles réservations. Par défaut, l'adresse d'envoi.",
 	"admin.settings.notification_email.placeholder": "vous@domaine.fr",
+	"admin.settings.locale.title": "Langue de vos emails",
+	"admin.settings.locale.description": "Les notifications que vous recevez seront dans cette langue, indépendamment de celle du client.",
 	"admin.settings.buffer.title": "Buffer entre les RDV (min)",
 	"admin.settings.buffer.description": "Temps protégé avant et après chaque rendez-vous.",
 	"admin.settings.portfolio.title": "Liens portfolio",

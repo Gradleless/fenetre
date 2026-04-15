@@ -3,6 +3,7 @@ import { db } from '$lib/server/db';
 import type { PortfolioLink } from '$lib/server/db/schema';
 import { userSettings } from '$lib/server/db/schema';
 import { requireAuth } from '$lib/server/remote-helpers';
+import { locales } from '$lib/paraglide/runtime';
 import { loadPublicPortfolioLinks } from '$lib/server/public-queries';
 import { eq } from 'drizzle-orm';
 import * as z from 'zod';
@@ -10,6 +11,7 @@ import * as z from 'zod';
 const DEFAULTS = {
 	notificationEmail: null,
 	bufferMinutes: 15,
+	preferredLocale: 'fr',
 	portfolioLinks: [] as PortfolioLink[],
 	googleRefreshToken: null,
 	googleCalendarId: 'primary',
@@ -57,6 +59,7 @@ export const updateSettings = command(
 			.optional(),
 		notificationEmail: z.string().email().nullable().optional(),
 		bufferMinutes: z.number().int().min(0).max(120).optional(),
+		preferredLocale: z.enum(locales).optional(),
 		portfolioLinks: z.array(PortfolioLinkSchema).max(20).optional()
 	}),
 	async (input) => {
