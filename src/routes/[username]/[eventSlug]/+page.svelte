@@ -13,10 +13,7 @@
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as m from '$lib/paraglide/messages';
 	import { getLocale } from '$lib/paraglide/runtime';
-	import { getAvailableSlots } from '$lib/remote/availability.remote';
 	import { createBooking, saveBrief } from '$lib/remote/bookings.remote';
-	import { getEventTypeBySlug } from '$lib/remote/eventTypes.remote';
-	import { getUserName } from '$lib/remote/users.remote';
 	import { formatDayLabel, formatTime, toastRemoteError } from '$lib/utils';
 	import { getLocalTimeZone, today, type DateValue } from '@internationalized/date';
 	import { ChevronLeft, Clock } from '@lucide/svelte';
@@ -24,16 +21,15 @@
 	import { fade } from 'svelte/transition';
 	import type { PageProps } from './$types';
 
-	let { params }: PageProps = $props();
+	let { data, params }: PageProps = $props();
 
 	const username = $derived(params.username);
 	const slug = $derived(params.eventSlug);
 	const source = $derived(page.url.searchParams.get('from') ?? 'direct');
 	const embed = $derived(page.url.searchParams.get('embed') === '1');
 
-	const eventType = $derived(await getEventTypeBySlug({ username, slug }));
-	const slots = $derived(await getAvailableSlots({ username, eventTypeSlug: slug }));
-	const hostName = $derived(await getUserName({ username }));
+	const eventType = $derived(data.eventType);
+	const slots = $derived(data.slots);
 
 	const locale = $derived(getLocale());
 	const availableDays = $derived(new Set(Object.keys(slots)));
@@ -281,7 +277,7 @@
 				<div class="flex flex-col gap-4 overflow-hidden p-6">
 					<div>
 						<p class="text-xs font-medium tracking-wide text-muted-foreground">
-							{hostName ?? username}
+							{eventType.hostName ?? username}
 						</p>
 						<h2 class="mt-2 text-xl font-bold">{eventType.name}</h2>
 						{#if eventType.description}

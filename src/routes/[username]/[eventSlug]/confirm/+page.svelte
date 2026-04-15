@@ -6,25 +6,19 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { formatDate, formatTime } from '$lib/utils';
-	import { getBookingConfirmation } from '$lib/remote/bookings.remote';
-	import { getPublicPortfolioLinks } from '$lib/remote/settings.remote';
 	import type { PageProps } from './$types';
 
-	let { params }: PageProps = $props();
+	let { data, params }: PageProps = $props();
 
 	const username = $derived(params.username);
-	const bookingId = $derived(page.url.searchParams.get('id') ?? '');
 	const embed = $derived(page.url.searchParams.get('embed') === '1');
 
 	$effect(() => {
 		if (embed) window.parent.postMessage({ type: 'fenetre:confirm' }, '*');
 	});
-	const booking = $derived(bookingId ? await getBookingConfirmation({ id: bookingId }) : null);
-	const allLinks = $derived(await getPublicPortfolioLinks({ username }));
 
-	const portfolioLinks = $derived(
-		allLinks?.filter((l) => l.missionType === 'all' || l.missionType === booking?.missionType) ?? []
-	);
+	const booking = $derived(data.booking);
+	const portfolioLinks = $derived(data.portfolioLinks);
 
 	function downloadIcs() {
 		if (!booking) return;

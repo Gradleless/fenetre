@@ -5,11 +5,10 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import * as m from '$lib/paraglide/messages';
-	import { getActiveEventTypes } from '$lib/remote/eventTypes.remote';
 	import { Clock } from '@lucide/svelte';
 	import type { PageProps } from './$types';
 
-	const { params }: PageProps = $props();
+	let { data, params }: PageProps = $props();
 
 	type KnownSource = 'malt' | 'linkedin' | 'portfolio';
 
@@ -36,7 +35,7 @@
 		isKnownSource(source) ? SUBTITLES[source]() : m['home.subtitle.default']()
 	);
 
-	const eventTypes = $derived(await getActiveEventTypes({ username }));
+	const eventTypes = $derived(data.eventTypes);
 
 	function eventHref(slug: string) {
 		const p = new URLSearchParams();

@@ -10,22 +10,14 @@
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { formatDate, formatTime, formatDayLabel, toastRemoteError } from '$lib/utils';
 	import { slide } from 'svelte/transition';
-	import { getBookingByToken, rescheduleBooking } from '$lib/remote/bookings.remote';
-	import { getAvailableSlots } from '$lib/remote/availability.remote';
+	import { rescheduleBooking } from '$lib/remote/bookings.remote';
 	import type { PageProps } from './$types';
 
-	let { params }: PageProps = $props();
+	let { data, params }: PageProps = $props();
 
 	const token = $derived(params.token);
-	const booking = $derived(await getBookingByToken({ token }));
-	const slots = $derived(
-		booking?.username
-			? await getAvailableSlots({
-					username: booking.username,
-					eventTypeSlug: booking.eventType.slug
-				})
-			: {}
-	);
+	const booking = $derived(data.booking);
+	const slots = $derived(data.slots);
 
 	let selectedSlot = $state<{ start: string; end: string } | null>(null);
 	let submitting = $state(false);
